@@ -1,28 +1,31 @@
-const ENDPOINT = 'https://api.giphy.com/v1/gifs';
-const ENDPOINT_TYPE = {
-  trending: 'trending',
-  search: 'search',
-};
+const URL = 'https://api.giphy.com/v1/gifs';
 const API_KEY = 'D4EUK5TYyx5bYrrOo6wYGFV91OvXIH4J';
 const LIMIT = 5;
-const defEndpoint = [ENDPOINT_TYPE.trending, null];
+const TRENDING = {
+  path: 'trending',
+};
+const SEARCH = {
+  path: 'search',
+  searchTerm: null,
+};
+
 const searchInput = document.querySelector('.search__input');
 const output = document.querySelector('.gif-container');
 const loader = document.querySelector('.loader');
 
 
-function createURL([endpointType, searchTerm]) {
+function createURL({ path, searchTerm }) {
   const q = (searchTerm) ? `q=${searchTerm.replace(/\s/g, '+')}&` : '';
 
-  return `${ENDPOINT}/${endpointType}?${q}api_key=${API_KEY}&limit=${String(LIMIT)}`;
+  return `${URL}/${path}?${q}api_key=${API_KEY}&limit=${String(LIMIT)}`;
 }
 
-function showLoader() {
+function toggleLoader() {
   loader.classList.toggle('active');
 }
 
 function fetchGifs(endpoint) {
-  showLoader();
+  toggleLoader();
 
   const url = createURL(endpoint);
 
@@ -64,7 +67,7 @@ function renderGifs(resBody) {
       return data;
     })
     .then(setMinHeight)
-    .finally(showLoader)
+    .finally(toggleLoader)
     .catch((e) => {
       console.log(e);
     });
@@ -86,8 +89,8 @@ const searchListener = () => {
   const searchTerm = searchInput.value.trim().toLowerCase();
 
   const endpoint = (searchTerm !== '')
-    ? [ENDPOINT_TYPE.search, searchTerm]
-    : defEndpoint;
+    ? { ...SEARCH, searchTerm }
+    : TRENDING;
 
   fetchGifs(endpoint).then(renderGifs);
 };
@@ -95,4 +98,4 @@ const searchListener = () => {
 
 searchInput.addEventListener('input', debounce(searchListener));
 
-fetchGifs(defEndpoint).then(renderGifs);
+fetchGifs(TRENDING).then(renderGifs);
